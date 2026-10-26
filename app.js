@@ -10,7 +10,8 @@
 const taskInput = document.getElementById("new-task"); //Add a new task.
 const addButton = document.getElementsByTagName("button")[0]; //first button
 const incompleteTaskHolder = document.getElementById("incompleteTasks"); //ul of #incompleteTasks
-const completedTasksHolder = document.getElementById("completed-tasks"); //completed-tasks
+const incompleteTasksList = document.getElementById("incompleteTasks");
+const completedTasksList = document.getElementById("completed-tasks");
 
 //New task list item
 const createNewTaskElement = function (taskString) {
@@ -60,7 +61,7 @@ const addTask = function () {
 
   //Append listItem to incompleteTaskHolder
   incompleteTaskHolder.appendChild(listItem);
-  bindTaskEvents(listItem, taskCompleted);
+  bindTaskEvents(listItem, incompleteTasksList);
 
   taskInput.value = "";
 };
@@ -97,22 +98,11 @@ const deleteTask = function () {
   ul.removeChild(listItem);
 };
 
-//Mark task completed
-const taskCompleted = function () {
-  //Append the task list item to the #completed-tasks
+function toggleTaskCompletion() {
   const listItem = this.parentNode;
-  completedTasksHolder.appendChild(listItem);
-  bindTaskEvents(listItem, taskIncomplete);
-};
-
-const taskIncomplete = function () {
-  //Mark task as incomplete.
-  //When the checkbox is unchecked
-  //Append the task list item to the #incompleteTasks.
-  const listItem = this.parentNode;
-  incompleteTaskHolder.appendChild(listItem);
-  bindTaskEvents(listItem, taskCompleted);
-};
+  const targetList = this.checked ? completedTasksList : incompleteTasksList;
+  targetList.appendChild(listItem);
+}
 
 //The glue to hold it all together.
 
@@ -120,32 +110,30 @@ const taskIncomplete = function () {
 addButton.onclick = addTask;
 addButton.addEventListener("click", addTask);
 
-const bindTaskEvents = function (taskListItem, checkBoxEventHandler) {
-  //select ListItems children
+function bindTaskEvents(taskListItem) {
   const checkBox = taskListItem.querySelector("input[type=checkbox]");
   const editButton = taskListItem.querySelector("button.edit");
   const deleteButton = taskListItem.querySelector("button.delete");
 
-  //Bind editTask to edit button.
   editButton.onclick = editTask;
-  //Bind deleteTask to delete button.
   deleteButton.onclick = deleteTask;
-  //Bind taskCompleted to checkBoxEventHandler.
-  checkBox.onchange = checkBoxEventHandler;
-};
+  checkBox.onchange = toggleTaskCompletion;
+}
 
 //cycle over incompleteTaskHolder ul list items
 //for each list item
-for (let i = 0; i < incompleteTaskHolder.children.length; i++) {
-  //bind events to list items chldren(tasksCompleted)
-  bindTaskEvents(incompleteTaskHolder.children[i], taskCompleted);
+function initTasks() {
+  addButton.addEventListener("click", addTask);
+
+  const initialTasks = [
+    ...incompleteTasksList.children,
+    ...completedTasksList.children,
+  ];
+
+  initialTasks.forEach(bindTaskEvents);
 }
 
-//cycle over completedTasksHolder ul list items
-for (let i = 0; i < completedTasksHolder.children.length; i++) {
-  //bind events to list items chldren(tasksIncompleted)
-  bindTaskEvents(completedTasksHolder.children[i], taskIncomplete);
-}
+initTasks();
 
 // Issues with usability don't get seen until they are in front of a human tester.
 
